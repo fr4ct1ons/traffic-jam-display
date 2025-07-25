@@ -70,6 +70,11 @@ void setup() {
 
 void loop() {
 
+  if(WiFi.status() != WL_CONNECTED)
+  {
+    ConnectWiFi();
+  }
+
   if(!mqttClient.connected())
   {
     ConnectMQTT();
