@@ -21,7 +21,7 @@ const char* ssid = WIFI_SSID;
 const char* password = WIFI_PASSWORD;
 const char* hostName = "ESP32-TJD-PrudenteDeMorais";
 
-const char* mqttTopic1 = "traffic/status/PrudenteDeMorais";
+const char* mqttTopic1 = "traffic/raw/prudente_de_moraes";
 //const char* mqttTopic2 = "traffic/status/PrudenteDeMorais";
 //const char* mqttTopic3 = "traffic/status/PrudenteDeMorais";
 //const char* mqttTopic4 = "traffic/status/PrudenteDeMorais";
@@ -47,7 +47,7 @@ void setup() {
 
   ConnectWiFi();
   ConnectMQTT();
-  mqttClient.subscribe(mqttTopic1);
+  mqttClient.subscribe(mqttTopic1, 0);
   mqttClient.setCallback(Callback);
 
   digitalWrite(FREE_STREET_LED, HIGH);
@@ -77,13 +77,12 @@ void loop() {
 
   mqttClient.loop();
 
-  mqttClient.subscribe(mqttTopic1);
-
+  /*
   digitalWrite(LED_BUILTIN, HIGH);
   delay(200);
   digitalWrite(LED_BUILTIN, LOW);
   delay(200);
-
+  */
 }
 
 
@@ -110,7 +109,9 @@ void Callback(char* topic, uint8_t* message, unsigned int messageLength)
   JsonDocument json;
   deserializeJson(json, messageTemp);
 
-  if(!json["status"].is<String>())
+  const char* jsonProperty = "congestion_level";
+
+  if(!json[jsonProperty].is<String>())
   {
     Serial.println("Message did not have a key named status. Aborting.");
     return;
@@ -118,10 +119,10 @@ void Callback(char* topic, uint8_t* message, unsigned int messageLength)
   else
   {
     Serial.print("Found a status! Status is:");
-    Serial.print((const char*)json["status"]);
+    Serial.println((const char*)json[jsonProperty]);
   }
 
-  const char* status = json["status"];
+  const char* status = json[jsonProperty];
 
   ResetDisplay();
   display.setCursor(0, 16);
